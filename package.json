@@ -1,0 +1,43 @@
+{
+  "name": "todouz",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "ADHD-friendly task manager with epics, sub-issues, time-blocks, and an MCP server so any Claude Code / Claude Desktop / Cursor session can read and write tasks.",
+  "license": "MIT",
+  "author": "Lee Lok Hang Toby <https://github.com/llhtoby38>",
+  "homepage": "https://github.com/llhtoby38/todouz#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/llhtoby38/todouz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/llhtoby38/todouz/issues"
+  },
+  "keywords": [
+    "productivity",
+    "todo",
+    "task-management",
+    "adhd",
+    "mcp-server",
+    "claude-code"
+  ],
+  "bin": {
+    "todouz-mcp": "./mcp-server/index.mjs"
+  },
+  "scripts": {
+    "start": "node mcp-server/http-server.mjs",
+    "mcp": "node mcp-server/index.mjs",
+    "dev": "node mcp-server/http-server.mjs",
+    "seed": "cp -nr examples/data/. data/"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.126",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

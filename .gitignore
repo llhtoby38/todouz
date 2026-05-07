@@ -1,0 +1,34 @@
+# Node
+node_modules/
+package-lock.json
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Personal data — every user has their own; never commit real entries
+/data/*
+!/data/.gitkeep
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Runtime
+*.log
+*.pid
+*.tmp
+/tmp/
+
+# Local Claude Code config
+.claude/settings.local.json
