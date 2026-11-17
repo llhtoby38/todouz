@@ -52,8 +52,8 @@
   <text x="466" y="133" class="s">Node + Express, one process</text>
 
   <rect x="466" y="156" width="308" height="64" rx="10" class="card"/>
-  <text x="484" y="183" class="h" style="font-size:15px">76 tools</text>
-  <text x="484" y="204" class="m">tools.mjs · brain · feed · journeys</text>
+  <text x="484" y="183" class="h" style="font-size:15px">74 tools</text>
+  <text x="484" y="204" class="m">tools.mjs · brain · feed · shares</text>
 
   <rect x="466" y="234" width="146" height="58" rx="10" class="card"/>
   <text x="482" y="259" class="h" style="font-size:14px">HTTP API</text>

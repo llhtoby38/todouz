@@ -268,7 +268,7 @@ function FeedSection({ data, onSelectIssue, onSelectBlock, onAdd, onExit }) {
   const [replyFor, setReplyFor] = fUseState(null);
   const [lessonReveal, setLessonReveal] = fUseState({});
   const [lessonDone, setLessonDone] = fUseState({});
-  fUseEffect(() => { (async () => { try { const r = await api('journey_status', {}); if (r && r.done_ids) setLessonDone(Object.fromEntries(r.done_ids.map(id => [`lesson:${id}`, true]))); } catch {} })(); }, []);
+  const [steerText, setSteerText] = fUseState('');
   const [replyText, setReplyText] = fUseState('');
   // post id → when the user sent a reply that Claude is now answering on the server.
   const [waiting, setWaiting] = fUseState({});
@@ -569,7 +569,7 @@ function FeedSection({ data, onSelectIssue, onSelectBlock, onAdd, onExit }) {
     }, 5000);
     return () => clearInterval(t);
   }, [waiting]);   // eslint-disable-line
-  const REPLY_PRESETS = ['More like this', 'Less like this', 'Too generic, cite the source', 'Turn this into a 60-second drill', 'Go deeper on this'];
+  const REPLY_PRESETS = ['More like this', 'Less like this', 'Too generic, cite the source', 'Make this a task for me', 'Go deeper on this'];
 
   // One-tap actions on the items a brief or review suggests.
   const itemKey = (it) => `${it.epic_slug}/${it.id}`;
@@ -1231,7 +1231,7 @@ function FeedSection({ data, onSelectIssue, onSelectBlock, onAdd, onExit }) {
     );
   };
 
-  const filters = [['all', 'All'], ['unseen', `Unseen${counts.unseen ? ` ${counts.unseen}` : ''}`], ['growth', '🎯 Growth'], ['sparked', '🔥 Sparked'], ['saved', '💾 Saved'], ['deeper', '🔎 Waiting']];
+  const filters = [['all', 'All'], ['unseen', `Unseen${counts.unseen ? ` ${counts.unseen}` : ''}`], ['sparked', 'Sparked'], ['saved', 'Saved'], ['deeper', 'Waiting']];
 
   return (
     // Phones: the feed is its own full-screen layer (inside the notch and home
@@ -1259,19 +1259,33 @@ function FeedSection({ data, onSelectIssue, onSelectBlock, onAdd, onExit }) {
           </span>
         ) : (
           <>
-            <button onClick={() => window.dispatchEvent(new CustomEvent('todouz-share-open'))} style={smallBtn} title="Share a reel, video, post or link for the Brain to file" aria-label="Share a link">{isMobile ? '📥' : '📥 Share'}</button>
-            <button onClick={() => runRoutine('daily-brief')} style={smallBtn} title="Write today's focus brief now">{isMobile ? '☀️ Brief' : '☀️ Brief me'}</button>
-            <button onClick={() => runRoutine('spark-feed')} style={smallBtn} title="Generate new posts now">{isMobile ? '✨ New' : '✨ New posts'}</button>
-            <button onClick={() => runRoutine('growth-feed')} style={smallBtn} title="Book ideas, conversation hooks and a speaking drill for today">{isMobile ? '🎯' : '🎯 Grow'}</button>
+            <button onClick={() => window.dispatchEvent(new CustomEvent('todouz-share-open'))} style={smallBtn} title="Share a reel, video, post or link for the Brain to file" aria-label="Share a link">{isMobile ? 'Share' : 'Share a link'}</button>
+            <button onClick={() => runRoutine('daily-brief')} style={smallBtn} title="Write today's focus brief now">{isMobile ? 'Brief' : 'Brief me'}</button>
+            <button onClick={() => runRoutine('spark-feed')} style={smallBtn} title="Generate new posts now">{isMobile ? 'More' : 'More posts'}</button>
           </>
         )}
       </div>
       <style>{'@keyframes feedPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.75); } } @keyframes feedShimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }'}</style>
       {(routines?.routines || []).some(r => r.last_status === 'error' && /login|authenticat|oauth/i.test(r.last_error || '')) && (
         <div style={{ background: withAlpha(T.overdue, 0.07), border: `1px solid ${withAlpha(T.overdue, 0.35)}`, borderRadius: 12, padding: '10px 12px', marginBottom: 8, fontSize: 13, lineHeight: 1.5, color: T.text }}>
-          <b>Routines can't run: the server's Claude login has expired.</b> Run <code>claude setup-token</code> on a machine signed in to your Max account, set the token as <code>CLAUDE_CODE_OAUTH_TOKEN</code> on the todouz app in Dokploy and redeploy. Or switch Settings → AI agent to an Anthropic API key.
+          <b>Routines can't run: the server's Claude login has expired.</b> Run <code>claude setup-token</code> on a machine signed in to your Claude account, set the token as <code>CLAUDE_CODE_OAUTH_TOKEN</code> on the server and restart it. Or switch Settings → AI agent to an Anthropic API key.
         </div>
       )}
+      <form onSubmit={async (e) => {
+          e.preventDefault();
+          const t = steerText.trim(); if (!t) return;
+          setSteerText('');
+          const r = await api('feed_prefs', { action: 'add', list: /^(less|no more|stop|fewer)\b/i.test(t) ? 'less' : 'more', text: t });
+          if (r && r.error) { flash(r.error); return; }
+          await runRoutine('spark-feed');
+        }}
+        style={{ display: 'flex', gap: 6, margin: isMobile ? '0 4px 6px' : '0 0 8px', flexShrink: 0 }}>
+        <input value={steerText} onChange={e => setSteerText(e.target.value)}
+          placeholder={isMobile ? 'Tell your feed what you want…' : 'Tell your feed what you want: "one ML paper a day", "weekend hike ideas", "less crypto"…'}
+          aria-label="Tell your feed what you want"
+          style={{ flex: 1, minWidth: 0, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 999, padding: '9px 14px', fontFamily: T.fontBody, fontSize: 13.5, color: T.text, outline: 'none' }} />
+        <button type="submit" disabled={!steerText.trim()} style={{ ...smallBtn, borderRadius: 999, padding: '0 14px', background: steerText.trim() ? T.accent : T.surface, color: steerText.trim() ? '#fff' : T.textMuted, border: steerText.trim() ? 'none' : `1px solid ${T.border}` }}>Make it</button>
+      </form>
       <div style={{ display: 'flex', gap: 5, overflowX: 'auto', paddingBottom: isMobile ? 4 : 6, marginBottom: isMobile ? 2 : 4, padding: isMobile ? '0 4px 4px' : undefined, flexShrink: 0, scrollbarWidth: 'none' }}>
         {filters.map(([k, l]) => <button key={k} onClick={() => setFilter(k)} style={chip(filter === k)}>{l}</button>)}
       </div>

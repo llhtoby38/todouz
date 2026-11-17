@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "A local-first life OS: plain-markdown tasks, a calendar dashboard and an MCP server so any AI agent can plan with you.",
+  "description": "Run your life by scrolling: tasks, schedule and a second brain in plain markdown, with an MCP server so any AI agent can plan with you.",
   "bin": {
     "todouz-mcp": "./mcp-server/index.mjs"
   },

@@ -41,15 +41,21 @@ const idOf = (r) => r?.id || r?.issue?.id || r?.created?.id;
   await mkdir(join(DATA_ROOT, 'personal'), { recursive: true });
   await writeFile(join(DATA_ROOT, 'personal/profile.md'), `# Profile
 
-- **Name:** Sam
-- **Now:** Full-stack developer, building a habit-tracking side project in the evenings
-- **Learning:** an online machine-learning course, one module a week
-- **Timezone:** Europe/London
+Sam is a full-stack developer in London who builds a habit-tracking app called Streaks in the evenings and is working through an online machine-learning course, one module a week.
 
-## How I work
-- Deep work in the mornings; meetings and admin after lunch.
-- Small next steps beat big plans. If a task has no next step, ask me for one.
-- Keep the gym on the calendar like any other meeting.
+## How Sam works
+- Deep work before noon; meetings, email and admin after lunch.
+- Small next steps beat big plans. If a task has no next step, suggest one.
+- The gym goes on the calendar like any other meeting.
+- Prefers short, direct answers with the decision first.
+`);
+  await writeFile(join(DATA_ROOT, 'personal/roadmap.md'), `# Roadmap
+
+Three goals for the next three months.
+
+1. Ship the Streaks beta to 20 testers, then decide whether to charge for it.
+2. Finish the ML course and build one small model for Streaks (predicting missed days).
+3. Run a 10k in spring without the knee flaring up.
 `);
 }
 
@@ -170,12 +176,25 @@ for (const n of notes) await call('brain_write', { ...n, source: 'demo' }).catch
 // ─── feed ────────────────────────────────────────────────────────────
 const posts = [
   { kind: 'brief', title: 'Today: staging cut-over, then the Android crash', hook: 'Two things matter today.',
-    body: 'Morning: staging cut-over prep for the payments migration (due in 2 days). Evening: the onboarding crash is the last blocker for the TestFlight beta. Everything else can wait.' },
+    body: 'Morning: staging cut-over prep for the payments migration (due in 2 days). Evening: the onboarding crash is the last blocker for the TestFlight beta. The physio booking is a two-minute call, do it at lunch. Everything else can wait.', tags: ['focus'],
+    visual: { type: 'steps', title: 'Your day in three moves', items: ['09:00  Staging cut-over prep (payments migration)', '12:30  Call the physio, two minutes', '19:00  Fix the onboarding crash, then invite testers'] } },
   { kind: 'insight', title: 'Your streak-freeze idea and the idempotency RFC are the same idea', hook: 'Forgive one retry.',
-    body: 'Both are about making a repeat harmless: a missed day that does not reset a streak, a retried payment that does not charge twice. That framing might make the RFC easier to explain.' },
-  { kind: 'question', title: 'What would make 20 beta testers actually open the app twice?', hook: 'Worth answering before Friday.' },
+    body: 'Both make a repeat harmless: a missed day that does not reset a streak, a retried payment that does not charge twice. Opening the RFC with that framing might make it easier to explain to the team.', tags: ['streaks', 'work'], notes: ['streaks-positioning', 'idempotency-keys'],
+    visual: { type: 'compare', left: { value: '1 miss', label: 'a streak survives a missed day' }, right: { value: '1 retry', label: 'a payment survives a retry' }, caption: 'Same principle, two projects' } },
+  { kind: 'resurface', title: 'You decided mornings are for deep work', hook: 'Tomorrow has a 08:00 ML block and a 14:00 RFC block.',
+    body: 'That matches your rule. Thursday does not: the shadow-traffic review sits at 10:00 but the long run is at 07:30. Worth swapping if you can.', tags: ['how-i-work'], notes: ['morning-deep-work'],
+    visual: { type: 'bars', title: 'Deep-work hours booked before noon', unit: 'h', data: [{ label: 'Mon', value: 2.5 }, { label: 'Tue', value: 1.5 }, { label: 'Wed', value: 2 }, { label: 'Thu', value: 0.5 }, { label: 'Fri', value: 1 }] } },
+  { kind: 'question', title: 'What would make 20 beta testers open the app twice?', hook: 'Worth answering before Friday.',
+    body: 'One idea from your notes: a day-2 nudge that shows the streak-freeze, the feature that makes Streaks different.', tags: ['streaks'],
+    visual: { type: 'stat', value: '20', label: 'testers invited this week', sub: 'Goal: 12 of them still using it on day 7' } },
+  { kind: 'note', title: 'Weekend idea: the coastal path from your saved list', hook: 'Saturday looks free after 16:00.',
+    body: 'You asked the feed for one weekend outdoor idea a week. The 8 km loop you saved last month fits Saturday afternoon, and Sunday is a long-run day so keep it easy.', tags: ['weekend'],
+    visual: { type: 'quote', text: 'One weekend outdoor idea a week.', by: 'what you asked this feed for' } },
 ];
 for (const p of posts) await call('feed_post', { ...p, source: 'demo' }).catch(e => console.warn('  skip post', p.title, e.message));
+
+for (const text of ['One weekend outdoor idea a week', 'Short summaries of new ML papers that matter for small apps']) await call('feed_prefs', { action: 'add', list: 'more', text }).catch(() => {});
+await call('feed_prefs', { action: 'add', list: 'less', text: 'Crypto and price speculation' }).catch(() => {});
 
 console.log(`✓ demo workspace written to ${DATA_ROOT}`);
 console.log('  start it with:  TODOUZ_DATA_DIR=' + DATA_ROOT + ' npm start');

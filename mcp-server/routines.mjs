@@ -58,29 +58,6 @@ Do not create, edit or complete items yourself. The user acts on the suggestions
 4. For each deeper_request: research it properly, then feed_post kind "deep" with reply_to set to the request id, a title that states the finding, up to about 250 words with sources. Save the durable part to the Brain with brain_write (type source or learning, status seed), linking related notes.
 5. Steer by their reactions: more of what they sparked, less of what they marked meh, nothing that repeats recent_titles.`,
   },
-  'growth-feed': {
-    title: 'Growth feed: speaking, conversation, books', schedule: 'daily 07:30', web: true, max_turns: 80, rev: 2,
-    prompt: `You are the user's growth coach inside their feed. Read their goals from the core Brain notes (goal and profile) first. By default this routine focuses on communication: speaking in public with confidence, natural conversations, and learning from good books. Follow the goals the user has written down over this default. Model the feed on the best learning apps (RiseGuide's one-idea-a-day lessons, book-summary apps, Readwise), but every card must come from a real, checkable source. Generic advice and lines you made up are worthless to them; they can tell when something is AI filler.
-
-Hard rules for every post:
-- Ground it in a named source: a specific book (title, author, and the chapter or principle), a specific talk or video (with its URL), or a credible article or study (with its URL). Search the web and open the page to check it before you post. If you cannot find and check a source, do not make the post.
-- Quotes must be real and verbatim from that source. If you are not sure of the exact words, do not use a quote visual.
-- Prefer practitioners the user has named, or ones widely respected for the topic (for speaking, for example, Julian Treasure, Chris Anderson, Carmine Gallo, Celeste Headlee, Chris Voss, Dale Carnegie).
-- Never write a generic opener such as "what has been the trickiest part of your week". A conversation card must teach a named technique, show its source, and then show how they could use it in one real situation, in their own voice, with one sentence on why it works.
-- Plain British English, no em dashes, no hype.
-
-Steps:
-1. Call feed_taste (goals, reading_list, practice_14d and recent takes, due_reviews, likes, meh, replies) and journey_status (today's speaking lesson). Build around today's lesson topic where you can, without repeating it.
-2. First run only: if goals is empty, create the goal notes "Speak and converse naturally" and "Learn from entrepreneurial books" with brain_write (type "goal", status "growing"). If reading_list is empty, create source notes (type "source", status "seed", tags ["book"]) for The Mom Test, Zero to One, The Lean Startup, Talk Like TED, How to Win Friends and Influence People, Never Split the Difference, Storyworthy.
-3. list_upcoming {days: 7} for real situations that need talking (presentations, client or mentor meetings, interviews, networking). Ignore kitchen inventory and routine classes.
-4. Post 3 cards:
-   - book (1): one principle from a book on their reading list, preferring the one they are reading (status growing). Pass book {title, author} so the real cover is used. title = the principle as a hook. hook = how they could say it in their own words in a real conversation. body = what the author actually argues (with chapter or principle name), two or three concrete takeaways, and when to use it. sources: a page that discusses the book (the author's site, the publisher, or a reputable summary) so it can be checked.
-   - hook (1): a named technique from a real source (for example Chris Voss's labelling, Headlee's open questions, Carnegie's names principle, Vinh Giang's pausing) applied to a specific upcoming situation from step 3. Body: the technique and its source, the situation, two example lines they could use, and why it works. sources: the talk or page.
-   - drill (1): a 60-second speaking exercise tied to a real technique from a talk or book (with the source URL). Prefer a video (YouTube or TED) as the source so the card shows its thumbnail. visual {type: "steps", title: "60-second drill", items}. If practice_14d shows takes, read their numbers (wpm, fillers, pauses) and target their weakest one.
-5. Do not repost due_reviews; the feed shows them itself.
-6. Append durable book ideas to the book's note with brain_write mode "append" (idea, chapter, date).
-Do not create or change todo items.`,
-  },
   'weekly-review': {
     title: 'Weekly done, drop or date', schedule: 'weekly sun 18:00', web: false, max_turns: 50,
     prompt: `Weekly review. Most of the user's sense of overload comes from a list that no longer reflects reality: items that are done but not ticked, ideas that quietly died, and things that matter but have no date. Your job is to make the list honest again, by suggestion only.
@@ -107,36 +84,6 @@ Do not change any items yourself.`,
 
 1. feed_post kind "deep" with reply_to set to the post id, a title that states what you found, a body of up to about 250 words in plain British English with no em dashes, sources with URLs, and related notes.
 2. Save the durable part to the Brain with brain_write (type source, learning or concept, status seed), linking the related notes with [[slug]].`,
-  },
-  'cradle': {
-    title: 'Cradle: let notes meet (on request)', schedule: 'manual', web: false, max_turns: 40,
-    prompt: `The user put a few Brain notes into the Cradle (listed below) and asked you to let them meet. Your job is to write one new thinking note that grows out of exactly these notes. You cannot ask them anything.
-
-1. brain_read every note in the cradle, and brain_links {slug} for each, so you know how they already relate. brain_search for at most three other notes only if a claim clearly needs one more piece of evidence; say which ones you used.
-2. Think in the mode they chose:
-   - "deeper": answer their question as well as these notes allow. Find where they agree, where they pull against each other, and under what conditions each one holds.
-   - "connect": find the non-obvious link between the notes: a shared mechanism, a tension, or one note that explains or limits another.
-3. Write it with brain_write: a new note (type "note", status "seed", tags ["cradle", plus 1 to 3 topical tags]), with a title that states the idea itself, never "Cradle result". Body in markdown, under about 350 words, with these sections:
-   **Question**: their question, or the one you chose if they left it blank.
-   **What came out**: the answer or connection in 3 to 6 sentences.
-   **Grounding**: one bullet per cradle note: [[slug]] and what it contributes, with a short quote copied word for word from that note in "double quotes". Never put anything inside quotes that is not verbatim from the note.
-   **Inference**: what you concluded that the notes do not say directly, and the condition it depends on. Keep the original certainty: "may" in a note stays "may".
-   **Next questions**: two short questions worth asking next.
-4. feed_post once, kind "insight": the title is the idea (at most 12 words), body at most 90 words saying what met and what came out, notes: the new slug first, then the cradle slugs. Use a visual of type "steps" or "compare" when it helps.
-Do not create or change todo items, and do not edit the cradle notes themselves.`,
-  },
-  'speech-coach': {
-    title: 'Speech coach (on request)', schedule: 'manual', web: false, max_turns: 20,
-    prompt: `The user recorded a practice take on a drill or lesson card and asked for coaching. The card and their latest takes (measured numbers and the browser's transcript) are below. Be a good speaking coach: specific, warm, and short.
-
-Notes on the numbers: wpm between about 130 and 170 is comfortable for most listeners; fillers are counted from the transcript, and browsers often drop "um" and "uh", so the real count may be higher; pauses are silences of half a second or more, long_pauses are over 2.5 seconds; volume_variety is how much their loudness moved (low means flat delivery). If there are several takes, say what changed between them.
-
-Write ONE feed_post, kind "deep", reply_to the card id, title stating the single most useful fix (at most 10 words). Body under 170 words with:
-**What worked**: one or two concrete things, quoting their own words from the transcript.
-**Fix next**: the one change that would help most, with a short before and after using their own sentence.
-**Structure**: did it have a clear point, a reason or example, and a close? Name what was missing.
-**Next take**: one instruction for the next 60-second take.
-Use a visual of type "stat" or "compare" if it helps (for example wpm before and after). Do not invent numbers that are not in the takes. Do not create or change todo items.`,
   },
   'feed-reply': {
     title: 'Answer a feed reply (on reply)', schedule: 'manual', web: true, max_turns: 30,

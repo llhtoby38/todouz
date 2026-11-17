@@ -322,44 +322,37 @@ function App() {
         activeTab={['projects', 'brain', 'feed'].includes(mobileTab) ? mobileTab : 'overview'}
         onTab={(id) => { setMobileTab(id === 'overview' ? 'today' : id); window.scrollTo({ top: 0 }); }}
       />
-      <main style={{ maxWidth: 1400, margin: '0 auto', padding: isMobile ? '10px 12px 40px' : '28px 28px 72px', minWidth: 0 }}>
+      <main style={{ maxWidth: 1400, margin: '0 auto', padding: isMobile ? '12px 12px calc(96px + env(safe-area-inset-bottom, 0px))' : '28px 28px 72px', minWidth: 0 }}>
         {/* Section switcher — one view at a time on phones so there's no
             endless scroll. Desktop still renders all three stacked. */}
         {/* Section switcher. Mobile: one view at a time (Today/Plan/Items/
             Projects). Desktop: the three original sections still stack under
             "Overview"; "Projects" swaps in the full-width board. Additive — the
             existing views are untouched. */}
-        {isMobile && (() => {
-          const tabs = [{ id: 'today', label: 'Today' }, { id: 'feed', label: 'Feed' }, { id: 'plan', label: 'Plan' }, { id: 'issues', label: 'Items' }, { id: 'projects', label: 'Board' }, { id: 'brain', label: 'Brain' }];
-          const activeId = mobileTab;
-          return (
-            <div style={{
-              display: 'flex', gap: 4, padding: 4, marginBottom: 12,
-              background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 999,
-              width: isMobile ? undefined : 'fit-content',
-            }}>
-              {tabs.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setMobileTab(t.id === 'overview' ? 'today' : t.id)}
+        {isMobile && mobileTab !== 'feed' && (
+          <nav aria-label="Primary" style={{
+            position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 55,
+            display: 'flex', justifyContent: 'space-around',
+            padding: '6px 6px calc(6px + env(safe-area-inset-bottom, 0px))',
+            background: 'rgba(250, 248, 244, 0.94)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+            borderTop: `1px solid ${T.border}`,
+          }}>
+            {MOBILE_TABS.map(t => {
+              const on = mobileTab === t.id;
+              return (
+                <button key={t.id} onClick={() => { setMobileTab(t.id); window.scrollTo({ top: 0 }); }} aria-current={on ? 'page' : undefined}
                   style={{
-                    flex: isMobile ? 1 : undefined, padding: isMobile ? '8px 4px' : '8px 16px',
-                    // Pinned rather than left to line-height: before the webfont
-                    // lands these measure 31px, i.e. under the touch floor.
-                    minHeight: 36,
-                    background: activeId === t.id ? T.surface : 'transparent',
-                    color: activeId === t.id ? T.text : T.textMuted,
-                    border: 'none', borderRadius: 999,
-                    fontFamily: T.fontBody, fontSize: 13,
-                    fontWeight: activeId === t.id ? 700 : 500,
-                    cursor: 'pointer',
-                    boxShadow: activeId === t.id ? T.shadowSm : 'none',
-                  }}
-                >{t.label}</button>
-              ))}
-            </div>
-          );
-        })()}
+                    flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                    padding: '6px 0 4px', minHeight: 48, background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: on ? T.accent : T.textMuted, fontFamily: T.fontBody, fontSize: 11, fontWeight: on ? 700 : 500,
+                  }}>
+                  <Icon kind={t.icon} size={22} />
+                  {t.label}
+                </button>
+              );
+            })}
+          </nav>
+        )}
         {mobileTab !== 'projects' && mobileTab !== 'brain' && mobileTab !== 'feed' && (!isMobile || mobileTab === 'today') && <TodaySection
           data={data}
           viewDate={viewDate}
@@ -754,10 +747,18 @@ function SelectionTray({ selection, onRemove, onClear, onExit, onCopy, onOpenCha
 // Desktop primary navigation, shown inside the top bar. Phones keep the
 // pill switcher under the header (more tabs, one view at a time).
 const DESKTOP_TABS = [
-  { id: 'overview', label: 'Overview' },
+  { id: 'overview', label: 'Today' },
   { id: 'feed', label: 'Feed' },
-  { id: 'projects', label: 'Projects' },
+  { id: 'projects', label: 'Board' },
   { id: 'brain', label: 'Brain' },
+];
+// Phones: a bottom tab bar, one view at a time.
+const MOBILE_TABS = [
+  { id: 'today', label: 'Today', icon: 'nav-today' },
+  { id: 'feed', label: 'Feed', icon: 'nav-feed' },
+  { id: 'plan', label: 'Plan', icon: 'event' },
+  { id: 'issues', label: 'Lists', icon: 'nav-list' },
+  { id: 'brain', label: 'Brain', icon: 'nav-brain' },
 ];
 
 function Header({ todayDate, onAsk, onArchive, onNew, onSettings, selectMode, onToggleSelect, onRefresh, sticky = true, tabs, activeTab, onTab }) {

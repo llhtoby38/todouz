@@ -16,7 +16,6 @@ import {
 import { saveAttachmentBytes, getAttachmentMeta } from './attachments.mjs';
 import { BRAIN_TOOLS, handleBrainCall } from './brain.mjs';
 import { FEED_TOOLS, handleFeedCall } from './feed.mjs';
-import { JOURNEY_TOOLS, handleJourneyCall } from './journeys.mjs';
 import { SOURCE_TOOLS, handleSourceCall } from './sources.mjs';
 import { SHARE_TOOLS, handleShareCall } from './shares.mjs';
 import { currentCtx, guardCall, filterResult, claimCategory, LEGACY_OWNER } from './access.mjs';
@@ -975,8 +974,6 @@ The slug MUST be lowercase letters/digits/dashes only (no spaces, no underscores
   ...BRAIN_TOOLS,
   // ─── spark feed (feed.mjs) ───
   ...FEED_TOOLS,
-  // ─── the speaking journey, one lesson a day (journeys.mjs) ───
-  ...JOURNEY_TOOLS,
   // ─── read-only connected workspaces (sources.mjs) ───
   ...SOURCE_TOOLS,
   // ─── posts shared in from other apps (shares.mjs) ───
@@ -1071,10 +1068,6 @@ async function dispatch(name, args = {}) {
         }
         if (name.startsWith('feed_')) {
           const r = await handleFeedCall(name, args);
-          if (r !== undefined) return r;
-        }
-        if (name.startsWith('journey_')) {
-          const r = await handleJourneyCall(name, args);
           if (r !== undefined) return r;
         }
         if (name === 'workspace_read') return await handleSourceCall(name, args);

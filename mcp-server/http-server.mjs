@@ -23,7 +23,6 @@ import { createRequire } from 'node:module';
 import { TOOLS, handleCall, safeReplacer, linkAttachment, unlinkAttachment, collectReminders } from './tools.mjs';
 import { initPush, vapidPublicKey, addSubscription, removeSubscription, sendToAll, subscriptionCount, startReminderScheduler } from './push.mjs';
 import { TODOUZ_ROOT, DATA_ROOT } from './store.mjs';
-import { ensureTodaysLesson } from './journeys.mjs';
 import { startRoutineScheduler, listRoutines, getRoutine, saveRoutine, deleteRoutine, enqueueRoutine, listRuns, routineStatus } from './routines.mjs';
 import { refillFeed } from './feed-refill.mjs';
 import { runLinkPass, pendingItems } from './brain-links.mjs';
@@ -1057,7 +1056,6 @@ app.post('/api/routines/run', async (req, res) => {
       args.mode = req.body.mode === 'connect' ? 'connect' : 'deeper';
     }
   }
-  if (name === 'cradle' && !args.slugs) return res.status(400).json({ error: 'put at least one note in the cradle' });
   res.json(enqueueRoutine(name, { trigger: 'manual', args }));
 });
 
@@ -1522,7 +1520,7 @@ const server = app.listen(PORT, HOST, async () => {
     console.error('  push: init failed —', e?.message || e);
   }
   // Routines: scheduled agent runs (daily brief, spark feed, weekly review…).
-  // Background AI is opt-in: TODOUZ_ROUTINES=on (and TODOUZ_LINKER / TODOUZ_JOURNEY / TODOUZ_REFILL_AI=on)
+  // Background AI is opt-in: TODOUZ_ROUTINES=on (and TODOUZ_LINKER / TODOUZ_REFILL_AI=on)
   // so a fresh install never spends your Claude subscription on its own.
   try {
     if ((process.env.TODOUZ_ROUTINES ?? 'off') === 'off') {
@@ -1539,13 +1537,6 @@ const server = app.listen(PORT, HOST, async () => {
   }
   if ((process.env.TODOUZ_LINKER ?? 'off') === 'off') console.log('  brain linker: OFF (set TODOUZ_LINKER=on to link notes automatically)');
   else { setInterval(linkerTick, 3 * 60000); kickLinker(30000); console.log('  brain linker: on (every 3 min)'); }
-  // The speaking journey: today's lesson card appears in the feed by itself
-  // (one per day, after yesterday's is done). TODOUZ_JOURNEY=off turns it off.
-  if ((process.env.TODOUZ_JOURNEY ?? 'off') !== 'off') {
-    const lessonTick = () => ensureTodaysLesson().catch(e => console.error('[journey]', e?.message || e));
-    setTimeout(lessonTick, 8000); setInterval(lessonTick, 20 * 60000);
-    console.log('  speaking journey: on (checks every 20 min)');
-  }
 });
 
 // Per-socket error guards. Without these, an EPIPE on a half-closed socket can

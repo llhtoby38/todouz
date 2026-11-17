@@ -240,7 +240,6 @@ function BrainSection({ data, onSelectIssue, onSelectEpic }) {
   const [linker, setLinker] = bUseState(null);      // background linker status
   const [evOpen, setEvOpen] = bUseState({});        // link id → evidence shown
   const [mobileMap, setMobileMap] = bUseState(false);
-  const [nebula, setNebula] = bUseState(false);     // the full-screen star view (nebula.jsx)
   const toastTimer = bUseRef(null);
 
   const flash = (m) => { setToast(m); if (toastTimer.current) clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(''), 2200); };
@@ -383,9 +382,9 @@ function BrainSection({ data, onSelectIssue, onSelectEpic }) {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
       <div style={{ flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 2 }}>
-          <h2 style={{ fontFamily: T.fontDisplay, fontSize: isMobile ? 22 : 26, margin: 0, color: T.text }}>Brain</h2>
+          <h2 onClick={() => { setSelected(null); setNote(null); }} title="Back to the overview" style={{ fontFamily: T.fontDisplay, fontSize: isMobile ? 22 : 26, margin: 0, color: T.text, cursor: 'pointer' }}>Brain</h2>
           <span style={{ flex: 1 }} />
-          {isMobile && <button onClick={() => setMobileMap(true)} style={ghostBtn}>🌌 Map</button>}
+          {isMobile && <button onClick={() => setMobileMap(true)} style={ghostBtn}>Overview</button>}
           <button onClick={() => setNewTitle(newTitle == null ? '' : null)} style={{ ...ghostBtn, background: T.accent, color: '#fff', border: 'none' }}>+ Note</button>
         </div>
         <div style={{ fontSize: 12.5, color: T.textFaint, marginBottom: 12 }}>Your second brain — shared memory every AI session reads and builds out.</div>
@@ -465,46 +464,65 @@ function BrainSection({ data, onSelectIssue, onSelectEpic }) {
   const noteBtn = (slug, title) => (
     <button onClick={() => open(slug)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: T.text, fontWeight: 600, textAlign: 'left' }}>{title}</button>
   );
+  const allNotes = (list && list.notes) || [];
+  const coreNotes = allNotes.filter(n => n.core);
+  const recentNotes = allNotes.filter(n => !n.core).slice().sort((x, y) => String(y.updated || '').localeCompare(String(x.updated || ''))).slice(0, 6);
+  const ctxCard = (n, hint) => (
+    <button key={n.slug} onClick={() => open(n.slug)} style={{ textAlign: 'left', cursor: 'pointer', font: 'inherit', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 15, fontWeight: 700, color: T.text, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</span>
+        {hint && <span style={{ fontSize: 11, color: T.textFaint }}>{hint}</span>}
+      </div>
+      <div style={{ fontSize: 13, color: T.textMuted, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{n.snippet || 'Empty so far. Open it and write a few lines, or ask your agent to fill it in.'}</div>
+    </button>
+  );
   const notePane = !selected ? (
-    <div style={{ padding: isMobile ? '6px 0' : '4px 0' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-        <h2 style={{ fontFamily: T.fontDisplay, fontSize: isMobile ? 21 : 24, margin: 0, color: T.text }}>What your Brain is noticing</h2>
-        {graph && <span style={{ fontSize: 12, color: T.textFaint }}>{graph.totals.links} links across {graph.totals.linked_notes} of {graph.totals.notes} notes · made by itself</span>}
+    <div style={{ padding: isMobile ? '6px 0' : '4px 0', maxWidth: 880 }}>
+      <h2 style={{ fontFamily: T.fontDisplay, fontSize: isMobile ? 22 : 28, margin: '0 0 6px', color: T.text }}>What your AI knows about you</h2>
+      <div style={{ fontSize: 13.5, color: T.textMuted, marginBottom: 18, lineHeight: 1.55, maxWidth: 680 }}>
+        Every AI you connect to todouz reads this before it answers, so no chat starts from zero. Keep your profile and goals current; decisions, learnings and preferences pile up here as you and your agents work.
       </div>
-      <div style={{ fontSize: 12.5, color: T.textMuted, marginBottom: 12, lineHeight: 1.5 }}>
-        Every note is read against the notes most like it, and linked only when the two really bear on each other: one supports, contradicts, limits, extends, trades off against or applies to the other.
-        {linker && linker.pending > 0 && <> <b style={{ color: T.accent }}>Linking {linker.pending} more in the background…</b></>}
-      </div>
-      {graph && graph.nodes.length > 0 && typeof BrainNebula === 'function' && (
-        <button onClick={() => setNebula(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 10, padding: '8px 14px', borderRadius: 999, cursor: 'pointer', fontFamily: T.fontBody, fontSize: 13, fontWeight: 600,
-          color: '#fff', border: 'none', background: 'linear-gradient(135deg,#49bbf0,#9254e8,#da548e)' }}>✦ Open the nebula <span style={{ fontWeight: 400, opacity: 0.85 }}>· fly through it and let notes meet in the Cradle</span></button>
+      {coreNotes.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 12, marginBottom: 22 }}>
+          {coreNotes.map(n => ctxCard(n, 'read first'))}
+        </div>
       )}
-      {nebula && graph && <BrainNebula graph={graph} onClose={() => setNebula(false)} onOpen={(slug) => { setNebula(false); open(slug); }} />}
-      {graph && graph.nodes.length > 0 ? <BrainMap graph={graph} onOpen={open} height={isMobile ? 320 : 420} /> : (
-        <div style={{ color: T.textFaint, fontSize: 13, padding: 20 }}>{graph ? 'No notes yet.' : 'loading the map…'}</div>
-      )}
-      {graph && (
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 10, marginTop: 14 }}>
-          {dirCard('⚡', 'Notes that disagree', 'Worth settling: when does each one hold?', graph.disagreements, x => (
-            <div key={x.id} style={{ fontSize: 12.5, lineHeight: 1.45, color: T.textMuted }}>
-              {noteBtn(x.a_slug, x.a)} <span style={{ color: BRAIN_REL_META.contradicts.color, fontWeight: 700 }}>✕</span> {noteBtn(x.b_slug, x.b)}
-              <div style={{ marginTop: 2 }}>{x.insight}</div>
-            </div>
-          ))}
-          {dirCard('🧲', 'Under tension', 'Backed up by some notes and challenged by others', graph.tensions, x => (
-            <div key={x.slug} style={{ fontSize: 12.5, color: T.textMuted }}>{noteBtn(x.slug, x.title)}
-              <span style={{ marginLeft: 6 }}><span style={{ color: BRAIN_REL_META.supports.color }}>✓{x.supports + x.extends}</span> · <span style={{ color: BRAIN_REL_META.contradicts.color }}>✕{x.contradicts + x.limits + x.tradeoff}</span></span></div>
-          ))}
-          {dirCard('📈', 'Building evidence', 'Three or more notes or posts back these up', graph.evidence_building, x => (
-            <div key={x.slug} style={{ fontSize: 12.5, color: T.textMuted }}>{noteBtn(x.slug, x.title)} <span style={{ marginLeft: 6 }}>{x.evidence} sources</span></div>
-          ))}
-          {dirCard('🌱', 'Not linked to anything yet', 'New ideas still on their own', graph.lonely, x => (
-            <div key={x.slug} style={{ fontSize: 12.5 }}>{noteBtn(x.slug, x.title)}</div>
-          ))}
-          {dirCard('🔥', 'Growing this week', 'Picked up new links in the last 7 days', graph.growing, x => (
-            <div key={x.slug} style={{ fontSize: 12.5, color: T.textMuted }}>{noteBtn(x.slug, x.title)} <span style={{ marginLeft: 6 }}>+{x.recent}</span></div>
+      <div style={{ ...SECTION_LABEL, marginTop: 0 }}>Recently learned</div>
+      {recentNotes.length > 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 10, marginBottom: 22 }}>
+          {recentNotes.map(n => (
+            <button key={n.slug} onClick={() => open(n.slug)} style={{ textAlign: 'left', cursor: 'pointer', font: 'inherit', background: T.surface, border: `1px solid ${T.border}`, borderLeft: `3px solid ${(BRAIN_TYPE_META[n.type] || BRAIN_TYPE_META.note).color}`, borderRadius: 10, padding: '10px 12px', minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: T.text, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</span>
+                <BrainTypeBadge type={n.type} small />
+              </div>
+              <div style={{ fontSize: 11, color: T.textFaint, marginTop: 4, fontFamily: T.fontMono }}>{brainAgo(n.updated)}{n.source ? ` · ${n.source}` : ''}</div>
+            </button>
           ))}
         </div>
+      ) : (
+        <div style={{ fontSize: 13, color: T.textFaint, marginBottom: 22 }}>Nothing yet. Capture a thought on the left, or tell your agent "remember that…".</div>
+      )}
+      <div style={{ ...SECTION_LABEL, marginTop: 0 }}>Connect another AI</div>
+      <div style={{ background: T.surface2, border: `1px solid ${T.border}`, borderRadius: 12, padding: '12px 14px', fontSize: 13, color: T.textMuted, lineHeight: 1.55, marginBottom: 22 }}>
+        Claude Code, Claude Desktop or Cursor can read and write this Brain over MCP. In a terminal: <code style={{ fontFamily: T.fontMono, fontSize: 12, background: T.surface, padding: '2px 6px', borderRadius: 6, border: `1px solid ${T.border}` }}>claude mcp add todouz node /path/to/todouz/mcp-server/index.mjs</code>. Settings has the full setup and an API key for anything else.
+      </div>
+      {graph && graph.totals && graph.totals.links > 0 && (
+        <details>
+          <summary style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: T.textMuted, marginBottom: 10 }}>How your notes connect · {graph.totals.links} links</summary>
+          <BrainMap graph={graph} onOpen={open} height={isMobile ? 300 : 380} />
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 10, marginTop: 14 }}>
+            {dirCard('⚡', 'Notes that disagree', 'Worth settling: when does each one hold?', graph.disagreements, x => (
+              <div key={x.id} style={{ fontSize: 12.5, lineHeight: 1.45, color: T.textMuted }}>
+                {noteBtn(x.a_slug, x.a)} <span style={{ color: BRAIN_REL_META.contradicts.color, fontWeight: 700 }}>✕</span> {noteBtn(x.b_slug, x.b)}
+                <div style={{ marginTop: 2 }}>{x.insight}</div>
+              </div>
+            ))}
+            {dirCard('📈', 'Building evidence', 'Three or more notes or posts back these up', graph.evidence_building, x => (
+              <div key={x.slug} style={{ fontSize: 12.5, color: T.textMuted }}>{noteBtn(x.slug, x.title)} <span style={{ marginLeft: 6 }}>{x.evidence} sources</span></div>
+            ))}
+          </div>
+        </details>
       )}
     </div>
   ) : (noteLoading && !note) ? (

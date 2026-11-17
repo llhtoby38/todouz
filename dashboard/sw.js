@@ -3,7 +3,7 @@
 // no stale-JS lock-in), falling back to the cache when the network is unavailable.
 // POST /api/* is never intercepted — the app's api() layer handles offline data
 // (cached reads + a replayed write queue) itself.
-const CACHE = 'todouz-v1';
+const CACHE = 'todouz-v2';
 const SHELL = [
   '/dashboard/',
   '/dashboard/index.html',
@@ -11,8 +11,6 @@ const SHELL = [
   '/dashboard/views.jsx',
   '/dashboard/drawers.jsx',
   '/dashboard/brain.jsx',
-  '/dashboard/nebula.jsx',
-  '/dashboard/practice.jsx',
   '/dashboard/feed.jsx',
   '/dashboard/app.jsx',
   'https://unpkg.com/react@18/umd/react.development.js',

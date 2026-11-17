@@ -14,7 +14,6 @@ const GROUPS = [
   ['Schedule & calendar', /^(list_today|list_upcoming|add_timeblock|list_timeblocks|update_timeblock|complete_timeblock|delete_timeblock|add_event|list_events|update_event|delete_event)$/],
   ['Second brain', /^brain_/],
   ['Feed', /^(feed_|share_)/],
-  ['Practice journeys', /^journey_/],
   ['Context, skills & sessions', /^(get_profile|get_full_context|list_skills|read_skill|write_skill|list_agents|list_sessions|link_session|update_session|delete_session)$/],
   ['Connectors & maintenance', /./],
 ];

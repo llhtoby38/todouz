@@ -37,7 +37,6 @@ Each person has their own lists, calendar, Brain, feed and chats. A category is 
 | `TODOUZ_ROUTINES` | `off` | `on` runs the routines in `data/routines/` on their schedules. Manual runs from Settings always work. |
 | `TODOUZ_LINKER` | `off` | `on` lets the Brain link new notes to related ones every few minutes. |
 | `TODOUZ_LINKER_MODEL` | as above | A cheaper model for the linker, if you like. |
-| `TODOUZ_JOURNEY` | `off` | `on` unlocks one practice-journey lesson per day. |
 | `TODOUZ_REFILL_AI` | `off` | `on` writes fresh feed posts when you reach the end of the feed. |
 
 All background AI is off by default because it uses your Claude plan without you asking each time.
