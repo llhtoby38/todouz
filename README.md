@@ -183,10 +183,6 @@ examples/      starter skills for data/skills/
 docs/          roadmap, configuration, data model, tool reference
 ```
 
-## Credits
-
-Built by [Toby Lee](https://github.com/llhtoby38) with Claude Code. The idea of typed links between Brain notes, and this README's layout, owe a lot to [Adam Chan](https://github.com/Adamchanadam)'s Creative Second Brain and [Agent Handoff Kit](https://github.com/Adamchanadam/agent-handoff-kit).
-
 ## Licence
 
 [MIT](LICENSE)
