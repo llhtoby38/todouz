@@ -104,11 +104,38 @@ Then, from any session:
 
 ## A tour
 
-| | |
-|---|---|
-| ![Calendar with sessions and deadlines](docs/images/calendar.webp) **Calendar.** Day, month and year views. Sessions show their time, deadlines show a flag; drag either to reschedule. | ![Item drawer with checklist and sessions](docs/images/item-drawer.webp) **Item drawer.** Description in markdown (WYSIWYG editor), checklist, attachments, nested items, booked sessions and an "Ask AI" button scoped to this item. |
-| ![Projects board](docs/images/projects.webp) **Projects.** A board of the folders you choose, grouped by project, due date or priority. | ![Brain: linked notes](docs/images/brain.webp) **Brain.** Typed notes (decision, learning, concept, preference…) that the agent reads first and links to each other. |
-| ![Feed with daily brief](docs/images/feed.webp) **Feed.** A short-post feed for your daily brief and anything your agent wants you to read later, with one-tap triage for overdue items. | <img src="docs/images/mobile-today.webp" alt="Mobile Today view" width="48%"> <img src="docs/images/mobile-plan.webp" alt="Mobile calendar" width="48%"><br>**Phone.** One view at a time, installable as an app. |
+**Calendar.** Day, month and year views. Sessions show their time and deadlines show a flag; drag either to reschedule.
+
+![Month calendar with sessions and deadlines](docs/images/calendar.webp)
+
+**Item drawer.** A WYSIWYG markdown description, checklist, attachments, nested items, booked sessions, and an "Ask AI" button scoped to the item.
+
+![Item drawer with checklist and sessions](docs/images/item-drawer.webp)
+
+<details>
+<summary><b>Projects board, Brain and Feed</b></summary>
+
+**Projects.** A board of the folders you choose, grouped by project, due date or priority.
+
+![Projects board](docs/images/projects.webp)
+
+**Brain.** Typed notes (decision, learning, concept, preference…) that the agent reads first and links to each other.
+
+![Brain with linked notes](docs/images/brain.webp)
+
+**Feed.** Your daily brief and anything your agent wants you to read later, with one-tap triage for overdue items.
+
+![Feed with the daily brief](docs/images/feed.webp)
+
+</details>
+
+**On your phone.** One view at a time, installable as an app.
+
+<p>
+  <img src="docs/images/mobile-today.webp" alt="Mobile Today view" width="290">
+  &nbsp;
+  <img src="docs/images/mobile-plan.webp" alt="Mobile calendar view" width="290">
+</p>
 
 ## How it works
 
