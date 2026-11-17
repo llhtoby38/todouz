@@ -196,6 +196,16 @@ export function serializeEpic(epic) {
 const ISSUE_HEADING_RE = /^##\s+(ISS-\d+)\s*—\s*(.+)$/;
 const SUBSECTION_RE = /^###\s+(.+)$/;
 const META_BULLET_RE = /^-\s+([a-z_]+):\s*(.*)$/;
+// A `### ` heading only ENDS the free-form description when it names one of these
+// STRUCTURAL subsections. Any other `### …` (e.g. `### AT-064`, an evidence
+// heading) is part of the description — otherwise a heading in the body would
+// truncate it and everything after would be silently dropped on parse.
+const KNOWN_SUBSECTIONS = new Set(['sub-tasks', 'subtasks', 'default itinerary', 'log', 'linked files']);
+function knownSubsectionHeading(line) {
+  const m = SUBSECTION_RE.exec(line);
+  const h = m ? m[1].trim() : null;
+  return (h && KNOWN_SUBSECTIONS.has(h.toLowerCase())) ? h : null;
+}
 const SUBTASK_RE = /^\s*-\s*\[([ xX])\]\s+(.+?)(?:\s*—\s*_due\s+(\d{4}-\d{2}-\d{2})_)?\s*$/;
 const LINKED_FILE_RE = /^\s*-\s+See:\s+\[([^\]]+)\]\(([^)]+)\)\s*$/;
 const LOG_ENTRY_RE = /^\s*-\s+(\d{4}-\d{2}-\d{2}).*?:\s*(.+)$/;
@@ -234,10 +244,21 @@ function parseIssueBlock(id, title, lines) {
     title,
     fields: {
       agent: null,
-      due: null,
+      due: null,        // YYYY-MM-DD or null
+      due_time: null,   // HH:MM or null — optional time-of-day on the deadline
+      created: null,    // YYYY-MM-DD the item was created — stamped at create time
       priority: 'medium',
       recurring: false,
       recurring_schedule: null,
+      auto_complete: false,
+      // Pinned items stick to the top of the Overview regardless of due date —
+      // for recurring-ish things (shopping list) you don't want to keep dating.
+      pinned: false,
+      // Lead-time minutes before the due time to push a reminder (null = none).
+      reminder: null,
+      assign_to: [],
+      // Ids of files/notes stored under data/attachments/ and linked to this item.
+      attachments: [],
       status: 'open',
       sessions: [],
       related_issues: [],
@@ -272,8 +293,31 @@ function parseIssueBlock(id, title, lines) {
       } else {
         issue.fields[key] = raw ? [raw] : [];
       }
+    } else if (key === 'tags') {
+      // Comma-separated, brackets optional: `- tags: fast, protein, main`.
+      // Normalised to lowercase kebab so filter chips match regardless of
+      // authoring style ("Low Effort" → "low-effort").
+      const inner = raw.startsWith('[') && raw.endsWith(']') ? raw.slice(1, -1) : raw;
+      issue.fields.tags = inner
+        ? inner.split(',').map(s => s.trim().toLowerCase().replace(/\s+/g, '-')).filter(Boolean)
+        : [];
     } else if (key === 'recurring') {
       issue.fields.recurring = raw === 'true';
+    } else if (key === 'auto_complete') {
+      // Time-based things (a class, a pilates session) that count as done once
+      // their time passes — no manual tick.
+      issue.fields.auto_complete = raw === 'true';
+    } else if (key === 'pinned') {
+      issue.fields.pinned = raw === 'true';
+    } else if (key === 'reminder') {
+      issue.fields.reminder = raw && raw !== 'null' ? Number(raw) : null;
+    } else if (key === 'assign_to') {
+      // Multi-assignee: comma-separated usernames → array. Back-compatible with
+      // the old single-value form (a bare "owner" parses to ["owner"]).
+      issue.fields.assign_to = String(raw || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    } else if (key === 'attachments') {
+      // Comma-separated attachment ids (files/notes under data/attachments/).
+      issue.fields.attachments = String(raw || '').split(',').map(s => s.trim()).filter(Boolean);
     } else if (key === 'recurring_schedule') {
       // Inline `{ dow: 2, time: '23:59' }` form
       if (raw === 'null' || raw === '') issue.fields.recurring_schedule = null;
@@ -287,23 +331,25 @@ function parseIssueBlock(id, title, lines) {
   }
   // Eat trailing blanks
   while (i < lines.length && !lines[i].trim()) i++;
-  // Description: everything up to first ### subsection
+  // Description: everything up to the first KNOWN structural subsection (so a
+  // `### AT-064` heading in the body stays in the description instead of cutting
+  // it off).
   const descStart = i;
-  while (i < lines.length && !lines[i].match(SUBSECTION_RE)) i++;
+  while (i < lines.length && !knownSubsectionHeading(lines[i])) i++;
   issue.description = lines.slice(descStart, i).join('\n').trim();
-  // Subsections
+  // Subsections (only the known structural ones; anything else stayed in desc).
   while (i < lines.length) {
-    const m = lines[i].match(SUBSECTION_RE);
-    if (!m) { i++; continue; }
-    const heading = m[1].trim().toLowerCase();
+    const heading = knownSubsectionHeading(lines[i]);
+    if (!heading) { i++; continue; }
+    const h = heading.toLowerCase();
     i++;
     const subStart = i;
-    while (i < lines.length && !lines[i].match(SUBSECTION_RE)) i++;
+    while (i < lines.length && !knownSubsectionHeading(lines[i])) i++;
     const subLines = lines.slice(subStart, i);
-    if (heading === 'sub-tasks' || heading === 'subtasks') issue.subtasks = parseChecklist(subLines);
-    else if (heading === 'default itinerary') issue.default_itinerary = parseChecklist(subLines);
-    else if (heading === 'log') issue.log = parseLog(subLines);
-    else if (heading === 'linked files') issue.linked_files = parseLinkedFiles(subLines);
+    if (h === 'sub-tasks' || h === 'subtasks') issue.subtasks = parseChecklist(subLines);
+    else if (h === 'default itinerary') issue.default_itinerary = parseChecklist(subLines);
+    else if (h === 'log') issue.log = parseLog(subLines);
+    else if (h === 'linked files') issue.linked_files = parseLinkedFiles(subLines);
   }
   return issue;
 }
@@ -366,14 +412,34 @@ export function serializeIssue(issue) {
   const f = issue.fields || {};
   if (f.agent != null) lines.push(`- agent: ${f.agent}`);
   if (f.due != null) lines.push(`- due: ${f.due}`);
+  if (f.due_time != null) lines.push(`- due_time: ${f.due_time}`);
+  if (f.created != null) lines.push(`- created: ${f.created}`);
   if (f.priority != null) lines.push(`- priority: ${f.priority}`);
   lines.push(`- recurring: ${f.recurring ? 'true' : 'false'}`);
+  if (f.auto_complete) lines.push(`- auto_complete: true`);
+  if (f.pinned) lines.push(`- pinned: true`);
+  if (f.reminder) lines.push(`- reminder: ${f.reminder}`);
+  {
+    // assign_to may be an array (new) or a bare string (legacy); write it back
+    // as a comma-separated list, omitting the line entirely when empty.
+    const asg = Array.isArray(f.assign_to) ? f.assign_to : (f.assign_to ? [f.assign_to] : []);
+    if (asg.length) lines.push(`- assign_to: ${asg.join(', ')}`);
+  }
   if (f.recurring && f.recurring_schedule) {
     const rs = f.recurring_schedule;
     const parts = Object.entries(rs).map(([k, v]) => `${k}: ${typeof v === 'string' ? `"${v}"` : v}`);
     lines.push(`- recurring_schedule: { ${parts.join(', ')} }`);
   }
   lines.push(`- status: ${f.status || 'open'}`);
+  // type: 'issue' (default, not written) | 'folder' — a grouping node that
+  // holds child issues but carries no actionable semantics (no due/priority/
+  // sessions chrome in the UI, excluded from open counts + due lists).
+  if (f.type && f.type !== 'issue') lines.push(`- type: ${f.type}`);
+  // Descriptions are markdown by default; agents can mark one 'html' to embed a
+  // rich, self-contained note. Only written when non-default to keep files clean.
+  if (f.description_format === 'html') lines.push(`- description_format: html`);
+  if (f.tags && f.tags.length) lines.push(`- tags: ${f.tags.join(', ')}`);
+  if (f.attachments && f.attachments.length) lines.push(`- attachments: ${f.attachments.join(', ')}`);
   if (f.sessions && f.sessions.length) lines.push(`- sessions: [${f.sessions.join(', ')}]`);
   else lines.push(`- sessions: []`);
   if (f.related_issues && f.related_issues.length) lines.push(`- related_issues: [${f.related_issues.join(', ')}]`);

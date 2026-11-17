@@ -7,20 +7,27 @@
 //
 // All paths are absolute relative to this file's location, so the server works from any cwd.
 
+import './tz.mjs';   // first: pin local time to the user's timezone before any date is computed
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import { TOOLS, handleCall, safeReplacer } from './tools.mjs';
+import { runAs, ctxFromEnv } from './access.mjs';
 
-const server = new Server({ name: 'todouz', version: '0.1.0' }, { capabilities: { tools: {} } });
+// When the HTTP server spawns this process for a user's chat or a routine, it
+// passes who that is (TODOUZ_ACT_AS); every call then runs under their access.
+// Launched by hand on the box (claude mcp add …) there is no caller: full access.
+const CALLER = ctxFromEnv();
+
+const server = new Server({ name: 'todouz', version: '0.2.0' }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
   const { name, arguments: args } = req.params;
   try {
-    const result = await handleCall(name, args || {});
+    const result = await runAs(CALLER, () => handleCall(name, args || {}));
     return {
       content: [{ type: 'text', text: JSON.stringify(result, safeReplacer, 2) }],
       isError: !!result?.error,

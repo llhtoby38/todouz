@@ -1,0 +1,7 @@
+node_modules
+data/state/index.db
+data/state/index.db-shm
+data/state/index.db-wal
+*.pre-merge-backup
+*.deprecated
+data/state/clean-slate-backup-*

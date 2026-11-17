@@ -1,42 +1,47 @@
 {
   "name": "todouz",
-  "version": "0.1.0",
-  "private": false,
+  "version": "0.2.0",
+  "private": true,
   "type": "module",
-  "description": "ADHD-friendly task manager with epics, sub-issues, time-blocks, and an MCP server so any Claude Code / Claude Desktop / Cursor session can read and write tasks.",
-  "license": "MIT",
-  "author": "Lee Lok Hang Toby <https://github.com/llhtoby38>",
-  "homepage": "https://github.com/llhtoby38/todouz#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/llhtoby38/todouz.git"
-  },
-  "bugs": {
-    "url": "https://github.com/llhtoby38/todouz/issues"
-  },
-  "keywords": [
-    "productivity",
-    "todo",
-    "task-management",
-    "adhd",
-    "mcp-server",
-    "claude-code"
-  ],
+  "description": "A local-first life OS: plain-markdown tasks, a calendar dashboard and an MCP server so any AI agent can plan with you.",
   "bin": {
     "todouz-mcp": "./mcp-server/index.mjs"
   },
   "scripts": {
     "start": "node mcp-server/http-server.mjs",
     "mcp": "node mcp-server/index.mjs",
-    "dev": "node mcp-server/http-server.mjs",
-    "seed": "cp -nr examples/data/. data/"
+    "demo": "TODOUZ_DATA_DIR=./demo-data node scripts/seed-demo.mjs && TODOUZ_DATA_DIR=./demo-data node mcp-server/http-server.mjs",
+    "docs:tools": "node scripts/gen-tool-docs.mjs"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.126",
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "better-sqlite3": "^11.10.0",
     "cors": "^2.8.5",
-    "express": "^5.0.0"
+    "express": "^5.0.0",
+    "web-push": "^3.6.7"
   },
+  "optionalDependencies": {
+    "@anthropic-ai/claude-agent-sdk-linux-arm64": "^0.2.126",
+    "@anthropic-ai/claude-agent-sdk-linux-x64": "^0.2.126"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/llhtoby38/todouz.git"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "ai-agents",
+    "productivity",
+    "markdown",
+    "todo",
+    "calendar",
+    "second-brain",
+    "local-first"
+  ],
   "engines": {
     "node": ">=20"
   }

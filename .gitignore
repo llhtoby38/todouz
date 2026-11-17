@@ -1,34 +1,26 @@
-# Node
+# Node / build
 node_modules/
-package-lock.json
 
-# Environment / secrets
-.env
-.env.*
-!.env.example
+# Rebuildable SQLite read-index — generated from markdown on boot.
+# Safe to delete at any time; will be re-created on next launch.
+data/state/index.db
+data/state/index.db-shm
+data/state/index.db-wal
 
-# Personal data — every user has their own; never commit real entries
-/data/*
-!/data/.gitkeep
+# One-time migration / merge-resolution leftovers
+*.pre-merge-backup
+*.deprecated
+data/state/clean-slate-backup-*/
+data/state/*.unqualified-backup
 
-# Build output
-dist/
-build/
-.next/
-out/
-
-# OS / editor
+# OS noise
 .DS_Store
-Thumbs.db
-.vscode/
-.idea/
-*.swp
 
-# Runtime
-*.log
-*.pid
-*.tmp
-/tmp/
+# Local dev env (test logins, never committed)
+.env.local
 
-# Local Claude Code config
-.claude/settings.local.json
+# Your own data stays out of git by default (remove these lines to version it)
+data/*
+!data/.gitkeep
+demo-data/
+.env

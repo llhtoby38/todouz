@@ -1,0 +1,16 @@
+services:
+  todouz:
+    build: .
+    ports:
+      - "8765:8765"
+    environment:
+      - TODOUZ_USERS=${TODOUZ_USERS:?set TODOUZ_USERS=name:password}
+      - TODOUZ_SECRET=${TODOUZ_SECRET:-}
+      - TODOUZ_API_KEY=${TODOUZ_API_KEY:-}
+      - TODOUZ_TZ=${TODOUZ_TZ:-UTC}
+      - TODOUZ_PUBLIC_URL=${TODOUZ_PUBLIC_URL:-http://localhost:8765}
+    volumes:
+      - todouz-data:/app/data
+    restart: unless-stopped
+volumes:
+  todouz-data:

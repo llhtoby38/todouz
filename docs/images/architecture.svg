@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 1200 560" width="1200" height="560" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a827a"/>
+    </marker>
+    <style>
+      .card{fill:#ffffff;stroke:#e7e2da;stroke-width:1.5}
+      .h{font-size:18px;font-weight:700;fill:#1a1714}
+      .s{font-size:13.5px;fill:#5a534b}
+      .m{font-family:'JetBrains Mono',Menlo,Consolas,monospace;font-size:12.5px;fill:#5a534b}
+      .tag{font-size:11px;font-weight:700;letter-spacing:.12em;fill:#8a827a}
+      .ln{stroke:#8a827a;stroke-width:1.6;fill:none}
+    </style>
+  </defs>
+  <rect width="1200" height="560" rx="22" fill="#faf8f4"/>
+
+  <!-- column labels -->
+  <text x="60" y="52" class="tag">WHO TALKS TO IT</text>
+  <text x="455" y="52" class="tag">ONE SERVER, ONE TOOL CATALOGUE</text>
+  <text x="890" y="52" class="tag">YOUR DATA, ON DISK</text>
+
+  <!-- clients -->
+  <g>
+    <rect x="40" y="72" width="330" height="96" rx="14" class="card"/>
+    <rect x="40" y="72" width="5" height="96" rx="2" fill="#c2410c"/>
+    <text x="64" y="106" class="h">You, in the dashboard</text>
+    <text x="64" y="130" class="s">Today, calendar, items, board,</text>
+    <text x="64" y="149" class="s">Brain and Feed. Phone-friendly PWA.</text>
+
+    <rect x="40" y="188" width="330" height="96" rx="14" class="card"/>
+    <rect x="40" y="188" width="5" height="96" rx="2" fill="#6b21a8"/>
+    <text x="64" y="222" class="h">The in-app agent</text>
+    <text x="64" y="246" class="s">"Ask agent" runs Claude with the</text>
+    <text x="64" y="265" class="s">todouz tools, as the signed-in user.</text>
+
+    <rect x="40" y="304" width="330" height="96" rx="14" class="card"/>
+    <rect x="40" y="304" width="5" height="96" rx="2" fill="#1e3a8a"/>
+    <text x="64" y="338" class="h">Any MCP client</text>
+    <text x="64" y="362" class="s">Claude Code, Claude Desktop, Cursor…</text>
+    <text x="64" y="381" class="m">claude mcp add todouz …</text>
+
+    <rect x="40" y="420" width="330" height="96" rx="14" class="card"/>
+    <rect x="40" y="420" width="5" height="96" rx="2" fill="#15803d"/>
+    <text x="64" y="454" class="h">Scripts and other AIs</text>
+    <text x="64" y="478" class="s">Plain HTTP with a personal key:</text>
+    <text x="64" y="497" class="m">POST /api/create_issue</text>
+  </g>
+
+  <!-- server -->
+  <rect x="440" y="72" width="360" height="444" rx="18" fill="#fff7f2" stroke="#f1c9b4" stroke-width="1.5"/>
+  <text x="466" y="110" class="h">todouz server</text>
+  <text x="466" y="133" class="s">Node + Express, one process</text>
+
+  <rect x="466" y="156" width="308" height="64" rx="10" class="card"/>
+  <text x="484" y="183" class="h" style="font-size:15px">76 tools</text>
+  <text x="484" y="204" class="m">tools.mjs · brain · feed · journeys</text>
+
+  <rect x="466" y="234" width="146" height="58" rx="10" class="card"/>
+  <text x="482" y="259" class="h" style="font-size:14px">HTTP API</text>
+  <text x="482" y="279" class="m">/api/&lt;tool&gt;</text>
+  <rect x="628" y="234" width="146" height="58" rx="10" class="card"/>
+  <text x="644" y="259" class="h" style="font-size:14px">MCP (stdio)</text>
+  <text x="644" y="279" class="m">index.mjs</text>
+
+  <rect x="466" y="306" width="308" height="58" rx="10" class="card"/>
+  <text x="484" y="331" class="h" style="font-size:14px">Accounts + access control</text>
+  <text x="484" y="351" class="m">every call runs as the caller</text>
+
+  <rect x="466" y="378" width="308" height="58" rx="10" class="card"/>
+  <text x="484" y="403" class="h" style="font-size:14px">Routines (opt-in)</text>
+  <text x="484" y="423" class="m">daily brief · feed · brain linker</text>
+
+  <rect x="466" y="450" width="308" height="44" rx="10" class="card"/>
+  <text x="484" y="477" class="h" style="font-size:14px">Web push reminders</text>
+
+  <!-- data -->
+  <rect x="870" y="72" width="290" height="300" rx="18" class="card"/>
+  <text x="894" y="110" class="h">data/  (plain files)</text>
+  <text x="894" y="142" class="m">epics/&lt;category&gt;/&lt;folder&gt;/</text>
+  <text x="910" y="164" class="m">epic.md     context</text>
+  <text x="910" y="186" class="m">issues.md   items + checklists</text>
+  <text x="894" y="214" class="m">brain/*.md     second brain</text>
+  <text x="894" y="236" class="m">skills/*.md    agent playbooks</text>
+  <text x="894" y="258" class="m">routines/*.md  scheduled prompts</text>
+  <text x="894" y="280" class="m">personal/profile.md</text>
+  <text x="894" y="302" class="m">state/*.json   calendar, log</text>
+  <text x="894" y="340" class="s">Grep it, diff it, version it with git.</text>
+
+  <rect x="870" y="392" width="290" height="124" rx="18" fill="#f3f0ea" stroke="#e7e2da" stroke-width="1.5" stroke-dasharray="5 5"/>
+  <text x="894" y="428" class="h" style="font-size:16px">index.db  (SQLite)</text>
+  <text x="894" y="453" class="s">Fast read index, rebuilt from</text>
+  <text x="894" y="472" class="s">the markdown on every boot.</text>
+  <text x="894" y="497" class="s">Delete it any time.</text>
+
+  <!-- arrows -->
+  <path class="ln" d="M370 120 C410 120 410 200 440 200" marker-end="url(#a)"/>
+  <path class="ln" d="M370 236 C410 236 410 250 440 250" marker-end="url(#a)"/>
+  <path class="ln" d="M370 352 C410 352 410 270 440 270" marker-end="url(#a)"/>
+  <path class="ln" d="M370 468 C410 468 410 290 440 290" marker-end="url(#a)"/>
+  <path class="ln" d="M800 220 L870 220" marker-start="url(#a)" marker-end="url(#a)"/>
+  <path class="ln" d="M1015 372 L1015 392" marker-end="url(#a)"/>
+  <text x="808" y="210" class="m" style="font-size:11px">read/write</text>
+</svg>

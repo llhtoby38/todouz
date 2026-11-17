@@ -2,8 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>todouz</title>
+
+  <!-- PWA: "Add to Home Screen" installs a standalone app (no browser bars).
+       iOS reads the apple-* tags; Android/Chrome reads the manifest. -->
+  <link rel="manifest" href="/dashboard/manifest.webmanifest" />
+  <meta name="theme-color" content="#faf8f4" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="todouz" />
+  <link rel="apple-touch-icon" href="/dashboard/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/dashboard/favicon-32.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!--
@@ -35,12 +46,12 @@
       --accent-soft:  rgba(194, 65, 12, 0.10);
 
       /* category palette — muted, distinguishable, never fully saturated */
-      --cat-studies:        #1e3a8a;
-      --cat-side-project:   #6b21a8;
-      --cat-body:           #15803d;
-      --cat-kitchen:        #a16207;
-      --cat-future-planning:#9f1239;
-      --cat-personal:       #475569;
+      --cat-work:     #1e3a8a;
+      --cat-projects: #6b21a8;
+      --cat-learning: #0e7490;
+      --cat-health:   #15803d;
+      --cat-home:     #a16207;
+      --cat-personal: #475569;
 
       /* status */
       --done:    #15803d;
@@ -74,6 +85,11 @@
       --r-lg: 12px;
       --r-xl: 16px;
     }
+
+    @keyframes todouz-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    /* App-logo loader: a lively "breathing" spin + a soft pulsing label. */
+    @keyframes todouz-logo-spin { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.09); } 100% { transform: rotate(360deg) scale(1); } }
+    @keyframes todouz-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
 
     *, *::before, *::after { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
@@ -156,6 +172,51 @@
     .md hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
     .md strong { font-weight: 600; color: var(--text); }
     .md em { font-style: italic; }
+    /* Embedded screenshots/evidence images (attach_image writes ![](…)). Fit the
+       column, never overflow, and read as a framed figure. */
+    .md img { display: block; max-width: 100%; height: auto; margin: 10px 0; border: 1px solid var(--border); border-radius: var(--r-md); }
+    .md p > img { margin: 6px 0; }
+
+    /* TipTap WYSIWYG editor. The editable surface carries the .md class so
+       headings/tables/images look exactly like the rendered view; these rules
+       add the editing chrome (focus, placeholder, table/image selection). */
+    .ProseMirror { outline: none; min-height: 160px; max-height: 55vh; overflow-y: auto;
+      padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
+    /* Full-screen editor: let the writing surface fill the window. */
+    .rich-fullscreen .ProseMirror { max-height: none; height: 100%; flex: 1; min-height: 0; }
+    .ProseMirror:focus-within, .ProseMirror.ProseMirror-focused { border-color: var(--accent); }
+    .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder);
+      color: var(--text-faint); float: left; height: 0; pointer-events: none; font-style: italic; }
+    .ProseMirror img { cursor: default; }
+    .ProseMirror img.ProseMirror-selectednode { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .ProseMirror table { border-collapse: collapse; width: 100%; table-layout: fixed; margin: 8px 0; overflow: hidden; }
+    .ProseMirror td, .ProseMirror th { border: 1px solid var(--border); padding: 6px 10px; position: relative; vertical-align: top; min-width: 44px; }
+    .ProseMirror th { background: var(--surface-2); font-weight: 600; }
+    .ProseMirror .selectedCell:after { content: ""; position: absolute; inset: 0; background: rgba(194,65,12,0.12); pointer-events: none; }
+    .ProseMirror .ProseMirror-gapcursor { display: block; }
+
+    /* iOS zooms the page when a focused TEXT-ENTRY control has font-size < 16px.
+       Forcing 16px on those is what actually stops the zoom (Safari ignores
+       user-scalable=no in newer versions). Buttons are excluded — they never
+       trigger the zoom and our nav/chip sizing depends on their own font-size. */
+    @media (max-width: 768px) {
+      input:not([type="checkbox"]):not([type="radio"]), textarea, select {
+        font-size: 16px !important;
+      }
+      html, body {
+        touch-action: pan-x pan-y;   /* no pinch-zoom */
+        -webkit-text-size-adjust: 100%;
+        overscroll-behavior: none;   /* no rubber-band bounce past top/bottom */
+      }
+    }
+
+    /* iOS Safari centres the value of native date/time inputs; left-align it so
+       the +New forms' dates/times line up with every other left-aligned field. */
+    input[type="date"]::-webkit-date-and-time-value,
+    input[type="time"]::-webkit-date-and-time-value,
+    input[type="datetime-local"]::-webkit-date-and-time-value {
+      text-align: left;
+    }
 
     /* native scrollbars get a soft neutral treatment */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -165,18 +226,77 @@
   </style>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Pinned to Babel 7.x. Unversioned unpkg now serves Babel 8.x, which
+       changed the default output mode for <script type="text/babel"> to ES
+       modules — resulting in "Cannot use import statement outside a module"
+       errors on every script tag even when the source has zero imports. -->
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
   <script src="https://unpkg.com/marked@12.0.0/marked.min.js"></script>
+  <!-- Turndown: converts pasted rich text (text/html) into markdown, and turns
+       the TipTap editor's HTML back into markdown on save so files stay markdown
+       on disk. Optional — the editor falls back to a raw textarea without it. -->
+  <script src="https://unpkg.com/turndown@7.2.0/dist/turndown.js"></script>
+  <!-- TipTap (rich WYSIWYG editor), loaded as ESM from esm.sh and exposed on
+       window for the classic app scripts. All packages pin the same @tiptap/core
+       + @tiptap/pm so ProseMirror isn't duplicated (that would throw). Optional:
+       if it fails to load (offline), the item editor uses the raw markdown
+       textarea instead. Fires 'tiptap-ready' when window.TipTap is populated. -->
+  <script type="module">
+    const V = '2';
+    const deps = `?deps=@tiptap/core@${V},@tiptap/pm@${V}`;
+    const B = 'https://esm.sh/@tiptap';
+    try {
+      const [core, kit, img, link, table, row, cell, header, ph, gfm] = await Promise.all([
+        import(`${B}/core@${V}`),
+        import(`${B}/starter-kit@${V}${deps}`),
+        import(`${B}/extension-image@${V}${deps}`),
+        import(`${B}/extension-link@${V}${deps}`),
+        import(`${B}/extension-table@${V}${deps}`),
+        import(`${B}/extension-table-row@${V}${deps}`),
+        import(`${B}/extension-table-cell@${V}${deps}`),
+        import(`${B}/extension-table-header@${V}${deps}`),
+        import(`${B}/extension-placeholder@${V}${deps}`),
+        import('https://esm.sh/turndown-plugin-gfm@1.0.2'),
+      ]);
+      window.TipTap = {
+        Editor: core.Editor,
+        StarterKit: kit.default || kit.StarterKit,
+        Image: img.default || img.Image,
+        Link: link.default || link.Link,
+        Table: table.default || table.Table,
+        TableRow: row.default || row.TableRow,
+        TableCell: cell.default || cell.TableCell,
+        TableHeader: header.default || header.TableHeader,
+        Placeholder: ph.default || ph.Placeholder,
+        gfm: gfm.gfm,
+      };
+      window.dispatchEvent(new Event('tiptap-ready'));
+    } catch (e) { console.warn('TipTap failed to load — using the markdown textarea', e); }
+  </script>
 </head>
 <body>
   <div id="root"></div>
   <script type="text/babel" data-presets="react" src="/dashboard/data.jsx"></script>
   <script type="text/babel" data-presets="react" src="/dashboard/views.jsx"></script>
   <script type="text/babel" data-presets="react" src="/dashboard/drawers.jsx"></script>
+  <script type="text/babel" data-presets="react" src="/dashboard/brain.jsx"></script>
+  <script type="text/babel" data-presets="react" src="/dashboard/nebula.jsx"></script>
+  <script type="text/babel" data-presets="react" src="/dashboard/practice.jsx"></script>
+  <script type="text/babel" data-presets="react" src="/dashboard/feed.jsx"></script>
   <script type="text/babel" data-presets="react" src="/dashboard/app.jsx"></script>
   <script type="text/babel" data-presets="react">
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
+  </script>
+  <!-- Offline app shell. Registered as a plain script (not Babel) so it runs
+       immediately; the SW itself is network-first, so online users always get
+       fresh code. -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/dashboard/sw.js').catch(function () {});
+      });
+    }
   </script>
 </body>
 </html>

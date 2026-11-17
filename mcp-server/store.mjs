@@ -9,7 +9,9 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const SERVER_DIR = dirname(__filename);
 export const TODOUZ_ROOT = resolve(SERVER_DIR, '..');
-export const DATA_ROOT = join(TODOUZ_ROOT, 'data');
+// TODOUZ_DATA_DIR points a local dev run at a scratch copy so testing never
+// writes into the repo's tracked data/ snapshot.
+export const DATA_ROOT = process.env.TODOUZ_DATA_DIR ? resolve(process.env.TODOUZ_DATA_DIR) : join(TODOUZ_ROOT, 'data');
 
 // rel → absolute. rel is rooted at todouz/data unless it starts with "/" or already absolute.
 export function abs(rel) {
